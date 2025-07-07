@@ -4,6 +4,12 @@
 
 ---
 
+## 🧭 Arsitektur Sistem
+
+![Arsitektur MQTT + Fiber + MongoDB](images/arch.png)
+
+---
+
 ## 🚀 Fitur
 
 - Menghasilkan dan mengirim data sensor (suhu air, suhu, pH, PPM) ke topik MQTT secara periodik.
