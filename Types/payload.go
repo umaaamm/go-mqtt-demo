@@ -1,9 +1,9 @@
 package Types
 
 type Sensor struct {
-	SenorSuhuAir string `json:"senorSuhuAir"`
-	SenorSuhu    string `json:"senorSuhu"`
-	SensorPPM    string `json:"sensorPPM"`
-	SensorPh     string `json:"sensorPh"`
-	LastUpdate   string `json:"lastUpdate"`
+	SensorSuhuAir string `json:"sensorSuhuAir" bson:"sensorSuhuAir"`
+	SensorSuhu    string `json:"sensorSuhu" bson:"sensorSuhu"`
+	SensorPPM     string `json:"sensorPPM" bson:"sensorPPM"`
+	SensorPh      string `json:"sensorPh" bson:"sensorPh"`
+	LastUpdate    string `json:"lastUpdate" bson:"lastUpdate"`
 }

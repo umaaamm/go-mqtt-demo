@@ -7,13 +7,26 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/gofiber/fiber/v2"
 
 	data "mqtt-demo/main/Types"
 	constant "mqtt-demo/main/constant"
+	"mqtt-demo/main/database"
+	"mqtt-demo/main/handlers"
 )
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	var sensor data.Sensor
+	err := json.Unmarshal(msg.Payload(), &sensor)
+	if err != nil {
+		fmt.Println("Failed to unmarshal JSON:", err)
+		return
+	}
+	err = handlers.SaveSensorData(sensor)
+	if err != nil {
+		fmt.Println("Failed to save to MongoDB:", err)
+	}
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -25,6 +38,21 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func main() {
+
+	// Init MongoDB
+	if err := database.InitMongoDB("mongodb://localhost:27017", "iotDB", "go "); err != nil {
+		panic(err)
+	}
+
+	go func() {
+		app := fiber.New()
+		app.Get("/sensor", handlers.GetSensorData)
+
+		if err := app.Listen(":3000"); err != nil {
+			panic(err)
+		}
+	}()
+
 	var broker = constant.MQTT_URL
 	var port = 8883
 	opts := mqtt.NewClientOptions()
@@ -74,11 +102,11 @@ func publish(client mqtt.Client) {
 		ph := fmt.Sprintf("%.1f", getRandomFloat(6.5, 7.5))        // e.g. 7.1
 
 		payload := data.Sensor{
-			SenorSuhuAir: suhuAir,
-			SenorSuhu:    suhu,
-			SensorPPM:    ppm,
-			SensorPh:     ph,
-			LastUpdate:   time.Now().Format(time.RFC3339),
+			SensorSuhuAir: suhuAir,
+			SensorSuhu:    suhu,
+			SensorPPM:     ppm,
+			SensorPh:      ph,
+			LastUpdate:    time.Now().Format(time.RFC3339),
 		}
 
 		jsonBytes, err := json.Marshal(payload)
